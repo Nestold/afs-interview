@@ -6,10 +6,16 @@
 
     public class Enemy : MonoBehaviour
     {
-        [SerializeField] private float maxSpeed;
-        [SerializeField] private float speedVariance;
+        [SerializeField] private float maxSpeed = 2f;
+        [SerializeField] private float speedVariance = .1f;
 
-        public event Action<Enemy> OnEnemyDied;
+        public Vector3 NextPosition
+        {
+            get
+            {
+                return transform.position + ((target - transform.position).normalized * speed / 2);
+            }
+        }
 
         private Vector2 boundsMin;
         private Vector2 boundsMax;
@@ -27,16 +33,22 @@
             SetTarget();
         }
 
+        public void Kill()
+        {
+            Destroy(gameObject);
+        }
+
         private void OnDestroy()
         {
-            OnEnemyDied?.Invoke(this);
+            GameplayManager.Instance.Enemies.Remove(this);
+            GameplayManager.Instance.AddScore();
         }
 
         private void Update()
         {
             var direction = (target - transform.position).normalized;
-
             transform.position += direction * speed * Time.deltaTime;
+
             if ((transform.position - target).magnitude <= 0.1f)
                 SetTarget();
         }
